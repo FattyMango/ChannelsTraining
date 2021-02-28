@@ -1,0 +1,29 @@
+{%for n in noti%}
+{{n}}
+<br>
+{%endfor%}
+<script>
+
+
+var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+	// var ws_path = ws_scheme + '://' + window.location.host + ":8001/"; // PRODUCTION
+	var ws_path = ws_scheme + '://' + window.location.host + "/noti/";
+	// console.log("Connecting to " + ws_path);
+    console.log(ws_path)
+	var notificationSocket = new WebSocket(ws_path);
+    notificationSocket.onopen = function(e){
+		console.log("Notification Socket on open: " + e)
+    };
+    notificationSocket.onmessage = function(noti) {
+		var data = JSON.parse(noti.data);
+        console.log(data)
+        }
+    function send_noti (){
+        notificationSocket.send(JSON.stringify({
+                'content': 'testing noti',
+                'from_email':'{{request.user.email}}',
+                'to_email':'{{request.user.email}}'
+            }));
+            return(true)
+    }    
+</script>
