@@ -1,8 +1,35 @@
-{%for n in noti%}
-{{n}}
-<br>
-{%endfor%}
-<script>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+   <title>noti</title>
+  </head>
+  <body>
+
+
+
+
+    
+      <button type="button" class="btn btn-dark " onclick="send_noti()">SEND NOTIFICATION</button>
+    
+   
+      <div class="toast mt-3" data-delay = 5000>
+        <div class="toast-header" id = "head">
+          Toast Header
+        </div>
+        <div class="toast-body" id = "body">
+          Some text inside the toast body
+        </div>
+      </div>
+
+    
+    <script>
+   
 
 
 var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
@@ -12,18 +39,44 @@ var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
     console.log(ws_path)
 	var notificationSocket = new WebSocket(ws_path);
     notificationSocket.onopen = function(e){
+        
 		console.log("Notification Socket on open: " + e)
     };
     notificationSocket.onmessage = function(noti) {
-		var data = JSON.parse(noti.data);
-        console.log(data)
+		const data = JSON.parse(noti.data);
+        console.log(data);
+        createMessage(data);
         }
+    function createMessage(data){
+        
+      data = JSON.parse(data);
+        console.log(data.content);
+        
+        var head = document.getElementById('head');
+        var body = document.getElementById('body');
+      
+        
+        
+        body.innerHTML  = data.content;
+        head.innerHTML  = data.time;
+        
+        show();
+    }    
+    function show (){    
+      $(document).ready(function(){
+        $('.toast').toast('show');   
+    }); }
     function send_noti (){
         notificationSocket.send(JSON.stringify({
                 'content': 'testing noti',
                 'from_email':'{{request.user.email}}',
                 'to_email':'{{request.user.email}}'
             }));
-            return(true)
+          
     }    
+
 </script>
+    
+  </body>
+</html>
+
