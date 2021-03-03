@@ -2,25 +2,57 @@
 <html>
 <head>
     <meta charset="utf-8"/>
-    <title>Chat Rooms</title>
+    <title>users</title>
 </head>
 <body>
-    What chat room would you like to enter?<br>
-    <input id="room-name-input" type="text" size="100"><br>
-    <input id="room-name-submit" type="button" value="Enter">
 
+{%for acc in accounts%}
+
+<button onclick="createOrReturnPrivateChat('{{acc.id}}')";> {{acc}} </button>
+
+<br><br><br>
+{%endfor%}
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
     <script>
-        document.querySelector('#room-name-input').focus();
-        document.querySelector('#room-name-input').onkeyup = function(e) {
-            if (e.keyCode === 13) {  // enter, return
-                document.querySelector('#room-name-submit').click();
-            }
-        };
+function createOrReturnPrivateChat(id){
+		payload = {
+			"csrfmiddlewaretoken": "{{ csrf_token }}",
+			"user2_id": id,
+		}
+		$.ajax({
+			type: 'POST',
+			dataType: "json",
+			url: "{% url 'get_room' %}", // production
+			data: payload,
+			timeout: 5000,
+			success: function(data) {
+				console.log("SUCCESS", data)
+				if(data['response'] == "Successfully got the chat."){
+					chatroomId = data['room_id']
+					OnGetOrCreateChatroomSuccess(chatroomId)
+				}
+				else if(data['response'] != null){
+					alert(data['response'])
+				}
+			},
+			error: function(data) {
+				console.error("ERROR...", data)
+				alert("Something went wrong.")
+			},
+		});
+	}
 
-        document.querySelector('#room-name-submit').onclick = function(e) {
-            var roomName = document.querySelector('#room-name-input').value;
-            window.location.pathname = '/chat/' + roomName + '/';
-        };
+
+	function OnGetOrCreateChatroomSuccess(chatroomId){
+        console.log(chatroomId);
+			var url = "chat/room/"+ chatroomId
+			window.location.pathname = url;
+			// var win = window.location.replace(url)
+			// for new tab
+			// win.focus()
+		}
+	
+        
     </script>
 </body>
 </html>
