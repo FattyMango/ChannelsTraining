@@ -30,36 +30,37 @@ content :
 </div>
 <h6 >
 likes : <div id = "like">{{likes}}</div></h6>
-<button onclick="send_like('{{post.id}}')">like</button>
+<button onclick="send_noti('{{post.author.email}}','{{post.id}}')">like</button>
 <script>
-    function send_like(id){
-		payload = {
-			"csrfmiddlewaretoken": "{{ csrf_token }}",
-			"pk": id,
-		}
+  // We could use this in complex projects
+  //   function send_like(id){
+	// 	payload = {
+	// 		"csrfmiddlewaretoken": "{{ csrf_token }}",
+	// 		"pk": id,
+	// 	}
 
-		$.ajax({
-			type: 'POST',
-			dataType: "json",
-			url: "{% url 'send_like'  %}", // production
-			data: payload,
-			timeout: 5000,
-			success: function(data) {
-				console.log("SUCCESS", data)
-				if(data['success'] == "success"){
-                    likes = data['likes']
-                    var like = document.getElementById('like');
-                    like.innerHTML = likes
-					console.log(data['likes'])
-				}
+	// 	$.ajax({
+	// 		type: 'POST',
+	// 		dataType: "json",
+	// 		url: "{% url 'send_like'  %}", // production
+	// 		data: payload,
+	// 		timeout: 5000,
+	// 		success: function(data) {
+	// 			console.log("SUCCESS", data)
+	// 			if(data['success'] == "success"){
+  //                   likes = data['likes']
+  //                   var like = document.getElementById('like');
+  //                   like.innerHTML = likes
+	// 				console.log(data['likes'])
+	// 			}
 
-			},
-			error: function(data) {
-				console.error("ERROR...", data)
-				alert("Something went wrong.")
-			},
-		});
-	}
+	// 		},
+	// 		error: function(data) {
+	// 			console.error("ERROR...", data)
+	// 			alert("Something went wrong.")
+	// 		},
+	// 	});
+	// }
 
 
 
@@ -92,7 +93,20 @@ likes : <div id = "like">{{likes}}</div></h6>
       $(document).ready(function(){
         $('.toast').toast('show');   
     }); }
-  
+    function send_noti (email,pk){
+      var like = document.getElementById('like');
+      // The code could be better with more logic 
+      // but ill leave it for now
+      like.innerHTML = parseInt(like.innerHTML) +1
+      console.log("data sent")
+        notificationSocket.send(JSON.stringify({
+                'message': 'Like sent',
+                'sender':'{{request.user.email}}',
+                'reciever':email,
+                'postpk':pk
+            }));
+          
+    }    
 
 </script>
 </body>
