@@ -1,15 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8"/>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <title>Chat Room</title>
 </head>
 <body>
-    
-    <textarea id="chat-log" cols="100" rows="20">
+    <!-- {%if not reciever.status %}
+    green
+    {%else%} 
+    red
+    {%endif%} -->
+    <div class="toast mt-3" data-delay = 5000>
+        <div class="toast-header" id = "head">
+          Toast Header
+        </div>
+        <div class="toast-body" id = "body">
+          Some text inside the toast body
+        </div>
+      </div>
+    <textarea id="chat-log" cols="100" rows="20" readonly >
         {%for msg in messages%}
-        {{msg.user}}:{{msg}}
         
+        {{msg.user}}:{{msg}}
         {%endfor%}
     </textarea><br>
     <input id="chat-message-input" type="text" size="100"><br>
@@ -18,17 +35,28 @@
     <script>
         
         var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
-	// var ws_path = ws_scheme + '://' + window.location.host + ":8001/"; // PRODUCTION
+	
 	var ws_path = ws_scheme + '://' + window.location.host + "/room/{{room_id}}/";
         const chatSocket = new WebSocket(ws_path);
-        console,console.log(ws_path);
+        console.log(ws_path);
+        
+	
+
+
+
+
         chatSocket.onmessage = function(e) {
             const data = JSON.parse(e.data);
             document.querySelector('#chat-log').value += (data.username+':'+data.message + '\n');
+            
+            if(data.username != '{{request.user.username}}')
+            createMessage(data.noti,data.username)
         };
         chatSocket.onopen = function(e) {
             console.log('Chat socket opened');
+
         };
+
         chatSocket.onclose = function(e) {
             console.error('Chat socket closed unexpectedly');
         };
@@ -40,16 +68,42 @@
             }
         };
 
-        document.querySelector('#chat-message-submit').onclick = function(e) {
+        document.querySelector('#chat-message-submit').onclick = function(e) 
+        {
             const messageInputDom = document.querySelector('#chat-message-input');
             const message = messageInputDom.value;
+            const sender = '{{request.user.email}}';
+            const reciever = "{{reciever.email}}";
+            
+
+            
             chatSocket.send(JSON.stringify({
                 'message': message,
-                'email':'{{request.user.email}}',
-                'reciever':"{{reciever.email}}"
+                'email':sender,
+                'reciever':reciever
             }));
+
             messageInputDom.value = '';
         };
+
+    function createMessage(noti,sender){
+        
+       ;
+        
+        var head = document.getElementById('head');
+        var body = document.getElementById('body');
+      
+        
+        
+        body.innerHTML  = noti;
+        head.innerHTML  = sender;
+        
+        show();
+    }    
+    function show (){    
+      $(document).ready(function(){
+        $('.toast').toast('show');   
+    }); }
     </script>
 </body>
 </html>

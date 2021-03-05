@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 ]
-ASGI_APPLICATION = 'train.asgi.application'
+ASGI_APPLICATION = 'train.routing.application'
 
 CHANNEL_LAYERS = {
     'default': {

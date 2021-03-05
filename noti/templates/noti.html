@@ -42,23 +42,18 @@ var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
         
 		console.log("Notification Socket on open: " + e)
     };
+    
     notificationSocket.onmessage = function(noti) {
 		const data = JSON.parse(noti.data);
         console.log(data);
         createMessage(data);
         }
     function createMessage(data){
-        
-      data = JSON.parse(data);
-        console.log(data.content);
-        
+      
         var head = document.getElementById('head');
         var body = document.getElementById('body');
-      
-        
-        
-        body.innerHTML  = data.content;
-        head.innerHTML  = data.time;
+        body.innerHTML  = data.message;
+        head.innerHTML  = data.username;
         
         show();
     }    
@@ -68,9 +63,9 @@ var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
     }); }
     function send_noti (){
         notificationSocket.send(JSON.stringify({
-                'content': 'testing noti',
-                'from_email':'{{request.user.email}}',
-                'to_email':'{{request.user.email}}'
+                'message': 'testing noti',
+                'sender':'{{request.user.email}}',
+                'reciever':'{{request.user.email}}'
             }));
           
     }    

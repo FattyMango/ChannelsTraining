@@ -11,15 +11,20 @@ import os
 from channels.auth import AuthMiddlewareStack
 from channels.routing import ProtocolTypeRouter,URLRouter
 from django.core.asgi import get_asgi_application
-import chat.routing
-import noti.routing
+import chat.consumers
+import noti.consumers
+from django.urls import re_path,path
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'train.settings')
 
 application = ProtocolTypeRouter({
   "http": get_asgi_application(),
   "websocket": AuthMiddlewareStack(
         URLRouter(
-            chat.routing.websocket_urlpatterns,
+            [
+            path('room/<room_id>/', chat.consumers.ChatConsumer.as_asgi()),
+            path('noti/', noti.consumers.notiConsumer.as_asgi()),
+
+            ]
         )
     ),
 })

@@ -1,38 +1,52 @@
 import json
 from asgiref.sync import sync_to_async
-from channels.generic.websocket import AsyncJsonWebsocketConsumer,WebsocketConsumer,AsyncWebsocketConsumer
+from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from .models import notification
 from django.contrib.auth.models import User
-
-class noticonsumer(AsyncJsonWebsocketConsumer):
+class notiConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        
-        print('Connected')
-        # Join room group
+        self.user = self.scope['user']
+        self.group_name = str(self.user.pk)
+        # print(self.group_name)
+        await self.channel_layer.group_add(
+            self.group_name,
+            self.channel_name
+        )
         await self.accept()
 
     async def disconnect(self, close_code):
-        print('Disconnected')
+        await self.channel_layer.group_discard(
+            self.group_name,self.channel_name
+        )   
+    
+    async def receive(self,text_data):
+        text_data_json = json.loads(text_data)
+        # print("text_data " + text_data)
+        message = text_data_json['message']
+        sender = text_data_json['sender']
+        reciever = text_data_json['reciever']
+        noti = await create_noti( userfrom=sender,userto=reciever,content=message)
+        await self.channel_layer.group_send(
 
-    # Receive message from WebSocket
-    async def receive_json(self,content):
-        data = content.get('content',None)
-        userto = content.get('to_email',None)
-        userfrom = content.get('from_email',None)
+            self.group_name,{
+               'type':'send_message',
+               'message':message,
+               'username' : noti.sender.username,
+               
+               
+            }
+        )
+    async def send_message(self,content):
+        message = content['message']
+        username = content['username']
         
-        noti = await create_noti(userfrom=userfrom,userto=userto,content = data)
-        
-        await self.send_json(content=json.dumps({
-            'content' : str(noti.content),
-            'from' : str(noti.sender.username),
-            'time' : str(noti.date_created)
-        }))
+        await self.send(text_data= json.dumps({'message':message,'username':username}))
         
 @database_sync_to_async           
 def  create_noti (userfrom,userto,content):
-    print('create_noti called')
+    
     user1 = User.objects.get(email=userto)
     user2 = User.objects.get(email=userfrom)
-    print('noti created')
+    
     return notification.objects.create(reciever=user1,sender=user2,content=content)

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <title>users</title>
+</head>
+<body>
+<h1>CHOOSE A USER TO SEND NOTIFICATION TO</h1>
+{%for acc in accounts%}
+<button style="margin: 50px;" onclick="createOrReturnPrivateChat('{{acc.id}}')";> {{acc}} </button>
+{%endfor%}
+
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+<script>
+		
+function createOrReturnPrivateChat(id){
+		payload = {
+			"csrfmiddlewaretoken": "{{ csrf_token }}",
+			"pk": id,
+		}
+		$.ajax({
+			type: 'POST',
+			dataType: "json",
+			url: "{% url 'send'  %}", // production
+			data: payload,
+			timeout: 5000,
+			success: function(data) {
+				console.log("SUCCESS", data)
+				if(data['success'] == "success"){
+					
+				}
+
+			},
+			error: function(data) {
+				console.error("ERROR...", data)
+				alert("Something went wrong.")
+			},
+		});
+	}
+
+
+
+        
+    </script>
+</body>
+</html>
