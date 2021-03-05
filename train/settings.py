@@ -33,6 +33,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'chat',
     'noti',
+    'post',
     'channels',
     'django.contrib.admin',
     'django.contrib.auth',

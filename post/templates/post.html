@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+   <title>noti</title>
+  </head>
+  <body>
+      
+   
+    <div class="toast mt-3" data-delay = 5000>
+        <div class="toast-header" id = "head">
+          Toast Header
+        </div>
+        <div class="toast-body" id = "body">
+          Some text inside the toast body
+        </div>
+      </div>
+
+<div  style="border-style: solid;">
+    <small> author :</small>
+<h1>{{post.author}}</h1>
+
+content :
+<p>{{post.content}}</p>
+</div>
+<h6 >
+likes : <div id = "like">{{likes}}</div></h6>
+<button onclick="send_like('{{post.id}}')">like</button>
+<script>
+    function send_like(id){
+		payload = {
+			"csrfmiddlewaretoken": "{{ csrf_token }}",
+			"pk": id,
+		}
+
+		$.ajax({
+			type: 'POST',
+			dataType: "json",
+			url: "{% url 'send_like'  %}", // production
+			data: payload,
+			timeout: 5000,
+			success: function(data) {
+				console.log("SUCCESS", data)
+				if(data['success'] == "success"){
+                    likes = data['likes']
+                    var like = document.getElementById('like');
+                    like.innerHTML = likes
+					console.log(data['likes'])
+				}
+
+			},
+			error: function(data) {
+				console.error("ERROR...", data)
+				alert("Something went wrong.")
+			},
+		});
+	}
+
+
+
+    var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+	// var ws_path = ws_scheme + '://' + window.location.host + ":8001/"; // PRODUCTION
+	var ws_path = ws_scheme + '://' + window.location.host + "/noti/";
+	// console.log("Connecting to " + ws_path);
+    console.log(ws_path)
+	var notificationSocket = new WebSocket(ws_path);
+    notificationSocket.onopen = function(e){
+        
+		console.log("Notification Socket on open: " + e)
+    };
+    
+    notificationSocket.onmessage = function(noti) {
+		const data = JSON.parse(noti.data);
+        console.log(data);
+        createMessage(data);
+        }
+    function createMessage(data){
+      
+        var head = document.getElementById('head');
+        var body = document.getElementById('body');
+        body.innerHTML  = data.message;
+        head.innerHTML  = data.username;
+        
+        show();
+    }    
+    function show (){    
+      $(document).ready(function(){
+        $('.toast').toast('show');   
+    }); }
+  
+
+</script>
+</body>
+</html>
